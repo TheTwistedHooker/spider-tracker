@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hexagon Tarantula Tracker V1</title>
+
+<style>
+:root{
+  --ink:#221f21;
+  --cream:#f7efe0;
+  --purple:#4a2544;
+  --sage:#6f8069;
+  --brass:#c99d48;
+}
+
+*{box-sizing:border-box}
+
+body{
+  font-family:Arial,sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  margin:0;
+  padding:14px;
+}
+
+.app{
+  max-width:1000px;
+  margin:auto;
+}
+
+h1{
+  margin:0;
+  font-size:25px;
+}
+
+.version{
+  color:var(--purple);
+  font-size:11px;
+  font-weight:900;
+  margin:4px 0 14px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+  margin-bottom:9px;
+}
+
+.stat{
+  background:white;
+  border:1px solid #999;
+  border-radius:9px;
+  padding:8px 3px;
+  text-align:center;
+  font-size:10px;
+}
+
+.stat strong{
+  display:block;
+  font-size:19px;
+}
+
+.track{
+  height:26px;
+  border:3px solid #000;
+  border-radius:99px;
+  background:white;
+  overflow:hidden;
+}
+
+.fill{
+  height:100%;
+  width:0%;
+  background:var(--brass);
+  transition:width .15s;
+}
+
+.caption{
+  margin-top:5px;
+  font-size:12px;
+  font-weight:900;
+}
+
+.legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin:14px 0;
+  font-size:11px;
+  font-weight:800;
+}
+
+.legend-item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.swatch{
+  width:23px;
+  height:23px;
+  border:2px solid #000;
+}
+
+.motif{
+  background:white;
+  border:1px solid #999;
+  border-radius:11px;
+  padding:10px;
+  margin-top:11px;
+}
+
+.motif-title{
+  font-size:13px;
+  font-weight:900;
+  margin-bottom:7px;
+}
+
+.round-row{
+  display:grid;
+  grid-template-columns:31px minmax(0,1fr);
+  gap:5px;
+  margin:4px 0;
+}
+
+.round-label{
+  padding-top:3px;
+  font-size:10px;
+  font-weight:900;
+}
+
+.square-grid{
+  display:grid;
+  gap:2px;
+  overflow-x:auto;
+  padding-bottom:3px;
+}
+
+.square{
+  aspect-ratio:1;
+  min-width:16px;
+  border:2px solid #000;
+  background:white;
+}
+
+.controls{
+  display:grid;
+  gap:6px;
+  border-top:1px solid #bbb;
+  padding-top:9px;
+  margin-top:9px;
+}
+
+.control{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 42px 46px 42px;
+  gap:5px;
+  align-items:center;
+  background:#f8f4ed;
+  border:1px solid #c7beb1;
+  border-radius:8px;
+  padding:7px;
+}
+
+.control-name{
+  font-size:11px;
+  font-weight:900;
+}
+
+.control-detail{
+  font-size:10px;
+  color:#5f5851;
+  margin-top:2px;
+}
+
+.step{
+  height:40px;
+  background:var(--ink);
+  color:white;
+  border:2px solid #000;
+  border-radius:8px;
+  font-size:23px;
+  font-weight:900;
+  touch-action:manipulation;
+}
+
+.step:disabled{
+  opacity:.28;
+}
+
+.count{
+  text-align:center;
+  font-weight:900;
+}
+
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:14px;
+}
+
+.action{
+  border:0;
+  border-radius:8px;
+  padding:10px 13px;
+  background:var(--sage);
+  color:white;
+  font-weight:900;
+}
+
+.action.print{
+  background:var(--purple);
+}
+
+.saved{
+  margin-top:8px;
+  min-height:18px;
+  font-size:11px;
+  font-weight:800;
+}
+
+@media(max-width:500px){
+  body{padding:9px}
+
+  .control{
+    grid-template-columns:minmax(0,1fr) 38px 42px 38px;
+  }
+}
+
+@media print{
+  body{background:white}
+
+  .controls,.actions{display:none}
+
+  .motif{break-inside:avoid}
+
+  .square-grid{overflow:visible}
+
+  .square,.swatch,.fill{
+    print-color-adjust:exact;
+    -webkit-print-color-adjust:exact;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<h1>HEXAGON TARANTULA</h1>
+<div class="version">VERSION 1 • FULL-PROJECT TEST BUILD</div>
+
+<div class="stats">
+
+  <div class="stat">
+    <strong id="done">0</strong>
+    round-units done
+  </div>
+
+  <div class="stat">
+    <strong>330</strong>
+    total round-units
+  </div>
+
+  <div class="stat">
+    <strong id="percent">0.0%</strong>
+    complete
+  </div>
+
+</div>
+
+<div
+  id="progressTrack"
+  class="track"
+  role="progressbar"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow="0">
+
+  <div id="progressFill" class="fill"></div>
+
+</div>
+
+<div id="caption" class="caption">
+0 of 330 round-units complete
+</div>
+
+<div class="legend">
+
+  <div class="legend-item">
+    <span class="swatch" style="background:#b99ad9"></span>
+    Lavender • R1
+  </div>
+
+  <div class="legend-item">
+    <span class="swatch" style="background:#4d9eb3"></span>
+    Random greens + blues • R2+R3
+  </div>
+
+  <div class="legend-item">
+    <span class="swatch" style="background:#29272a"></span>
+    Black • R4+R5
+  </div>
+
+</div>
+
+<main id="tracker"></main>
+
+<div class="actions">
+
+  <button
+    type="button"
+    class="action"
+    onclick="resetProgress()">
+    Clear Progress
+  </button>
+
+  <button
+    type="button"
+    class="action print"
+    onclick="window.print()">
+    Print / Save PDF
+  </button>
+
+</div>
+
+<div id="savedMessage" class="saved"></div>
+
+</div>
+
+<script>
+
+const motifTypes = [
+  ["Pentagons",22],
+  ["Hexagons",32],
+  ["Heptagons",8],
+  ["Modified Octagons",2],
+  ["Fang Pentagons",2]
+];
+
+const sections = [
+  {
+    name:"Lavender",
+    rounds:[1],
+    color:"#b99ad9"
+  },
+  {
+    name:"Random greens + blues",
+    rounds:[2,3],
+    color:"#4d9eb3"
+  },
+  {
+    name:"Black",
+    rounds:[4,5],
+    color:"#29272a"
+  }
+];
+
+const TOTAL = 330;
+
+const STORAGE_KEY = "hexagon-tarantula-v1-progress";
+
+let progress;
+
+
+/* LOAD SAVED PROGRESS */
+
+function loadProgress(){
+
+  try{
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if(saved){
+      progress = JSON.parse(saved);
+    }
+
+  }catch(error){
+    console.log("Could not read saved progress.");
+  }
+
+  if(
+    !Array.isArray(progress) ||
+    progress.length !== motifTypes.length
+  ){
+    progress = motifTypes.map(() => [0,0,0]);
+  }
+
+}
+
+
+/* SAVE AUTOMATICALLY */
+
+function saveProgress(){
+
+  try{
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(progress)
+    );
+
+    document.getElementById("savedMessage").textContent =
+      "Progress saved automatically on this device.";
+
+  }catch(error){
+
+    document.getElementById("savedMessage").textContent =
+      "Browser storage is unavailable.";
+
+  }
+
+}
+
+
+/* COMPLETION MATH */
+
+function completedUnits(){
+
+  let total = 0;
+
+  progress.forEach((motifProgress) => {
+
+    motifProgress.forEach((count,sectionIndex) => {
+
+      total +=
+        count *
+        sections[sectionIndex].rounds.length;
+
+    });
+
+  });
+
+  return total;
+}
+
+
+/* UPDATE TOP PROGRESS */
+
+function updateProgress(){
+
+  const completed = completedUnits();
+
+  const percentage =
+    TOTAL > 0
+      ? (completed / TOTAL) * 100
+      : 0;
+
+  document.getElementById("done").textContent =
+    completed;
+
+  document.getElementById("percent").textContent =
+    percentage.toFixed(1) + "%";
+
+  document.getElementById("caption").textContent =
+    completed +
+    " of " +
+    TOTAL +
+    " round-units complete";
+
+  document.getElementById("progressFill").style.width =
+    Math.min(100,percentage) + "%";
+
+  document
+    .getElementById("progressTrack")
+    .setAttribute(
+      "aria-valuenow",
+      percentage.toFixed(2)
+    );
+
+}
+
+
+/* FIND SECTION FOR ROUND */
+
+function sectionForRound(round){
+
+  return sections.findIndex(
+    section =>
+      section.rounds.includes(round)
+  );
+
+}
+
+
+/* PLUS / MINUS */
+
+function changeProgress(
+  motifIndex,
+  sectionIndex,
+  amount
+){
+
+  const maximum =
+    motifTypes[motifIndex][1];
+
+  const current =
+    progress[motifIndex][sectionIndex];
+
+  progress[motifIndex][sectionIndex] =
+    Math.max(
+      0,
+      Math.min(
+        maximum,
+        current + amount
+      )
+    );
+
+  saveProgress();
+
+  renderTracker();
+
+}
+
+
+/* BUILD TRACKER */
+
+function renderTracker(){
+
+  const tracker =
+    document.getElementById("tracker");
+
+  tracker.innerHTML = "";
+
+
+  motifTypes.forEach(
+    (motif,motifIndex) => {
+
+      const motifName = motif[0];
+      const motifCount = motif[1];
+
+      const section =
+        document.createElement("section");
+
+      section.className = "motif";
+
+
+      const heading =
+        document.createElement("div");
+
+      heading.className =
+        "motif-title";
+
+      heading.textContent =
+        motifName.toUpperCase() +
+        " / " +
+        motifCount;
+
+      section.appendChild(heading);
+
+
+      /* ROUND GRIDS */
+
+      for(
+        let round = 1;
+        round <= 5;
+        round++
+      ){
+
+        const sectionIndex =
+          sectionForRound(round);
+
+        const completed =
+          progress[motifIndex][sectionIndex];
+
+        const row =
+          document.createElement("div");
+
+        row.className = "round-row";
+
+
+        const label =
+          document.createElement("div");
+
+        label.className =
+          "round-label";
+
+        label.textContent =
+          "R" + round;
+
+
+        const grid =
+          document.createElement("div");
+
+        grid.className =
+          "square-grid";
+
+        grid.style.gridTemplateColumns =
+          "repeat(" +
+          motifCount +
+          ",minmax(16px,1fr))";
+
+
+        for(
+          let squareIndex = 0;
+          squareIndex < motifCount;
+          squareIndex++
+        ){
+
+          const square =
+            document.createElement("span");
+
+          square.className =
+            "square";
+
+          if(
+            squareIndex <
+            completed
+          ){
+
+            square.style.background =
+              sections[sectionIndex].color;
+
+          }
+
+          grid.appendChild(square);
+
+        }
+
+
+        row.append(
+          label,
+          grid
+        );
+
+        section.appendChild(row);
+
+      }
+
+
+      /* SECTION CONTROLS */
+
+      const controls =
+        document.createElement("div");
+
+      controls.className =
+        "controls";
+
+
+      sections.forEach(
+        (productionSection,sectionIndex) => {
+
+          const completed =
+            progress[motifIndex][sectionIndex];
+
+
+          const control =
+            document.createElement("div");
+
+          control.className =
+            "control";
+
+
+          const information =
+            document.createElement("div");
+
+
+          const controlName =
+            document.createElement("div");
+
+          controlName.className =
+            "control-name";
+
+          controlName.textContent =
+            productionSection.name +
+            " • R" +
+            productionSection.rounds.join("+R");
+
+
+          const controlDetail =
+            document.createElement("div");
+
+          controlDetail.className =
+            "control-detail";
+
+          controlDetail.textContent =
+            completed +
+            " of " +
+            motifCount +
+            " motif sections complete";
+
+
+          information.append(
+            controlName,
+            controlDetail
+          );
+
+
+          const minus =
+            document.createElement("button");
+
+          minus.type = "button";
+
+          minus.className =
+            "step";
+
+          minus.textContent = "−";
+
+          minus.disabled =
+            completed === 0;
+
+          minus.onclick = () =>
+            changeProgress(
+              motifIndex,
+              sectionIndex,
+              -1
+            );
+
+
+          const count =
+            document.createElement("div");
+
+          count.className =
+            "count";
+
+          count.textContent =
+            completed;
+
+
+          const plus =
+            document.createElement("button");
+
+          plus.type = "button";
+
+          plus.className =
+            "step";
+
+          plus.textContent = "+";
+
+          plus.disabled =
+            completed === motifCount;
+
+          plus.onclick = () =>
+            changeProgress(
+              motifIndex,
+              sectionIndex,
+              1
+            );
+
+
+          control.append(
+            information,
+            minus,
+            count,
+            plus
+          );
+
+          controls.appendChild(control);
+
+        }
+      );
+
+
+      section.appendChild(controls);
+
+      tracker.appendChild(section);
+
+    }
+  );
+
+
+  updateProgress();
+
+}
+
+
+/* RESET */
+
+function resetProgress(){
+
+  const confirmed =
+    confirm(
+      "Clear ALL saved progress for this spider?"
+    );
+
+  if(!confirmed){
+    return;
+  }
+
+  progress =
+    motifTypes.map(
+      () => [0,0,0]
+    );
+
+  saveProgress();
+
+  renderTracker();
+
+}
+
+
+/* START APP */
+
+loadProgress();
+
+renderTracker();
+
+</script>
+
+</body>
+</html>
